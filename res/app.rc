@@ -1,0 +1,26 @@
+/* ===========================================================================
+   app.rc - resource script
+   ===========================================================================
+
+   This file embeds the manifest into the .exe.
+
+   The two numbers matter:
+
+     1   = CREATEPROCESS_MANIFEST_RESOURCE_ID.
+           For an .exe the manifest MUST have resource ID 1. ID 2 is the one
+           used for DLLs, and Windows will simply ignore a manifest with the
+           wrong ID - you get no error, just the unthemed Windows-95 look and
+           a lot of confusion.
+
+     24  = RT_MANIFEST, the resource TYPE for manifests.
+
+   Build with:
+       windres -O coff -i res/app.rc -o build/app.res.o
+
+   Then link build/app.res.o like any other object file.
+
+   NOTE: keep this file plain ASCII with no byte-order mark. The windres
+   preprocessor chokes on a UTF-8 BOM with a confusing syntax error.
+   =========================================================================== */
+
+1 24 "app.manifest"

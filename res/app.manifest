@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+
+  <assemblyIdentity
+      type="win32"
+      name="FastSearch"
+      version="1.0.0.0"
+      processorArchitecture="*"/>
+
+  <!--
+    COMMON CONTROLS VERSION 6
+    ========================
+    This block is not cosmetic - it is load-bearing.
+
+    Windows ships two versions of the common controls library. Version 5 is the
+    original from the 1990s; version 6 is the themed one that every modern
+    Windows program uses. You get version 5 BY DEFAULT, and the only way to ask
+    for version 6 is this manifest entry.
+
+    Without it:
+      * the list and status bar render in flat grey Windows-95 styling
+      * some version-6-only behaviour is simply missing
+
+    This is also why InitCommonControlsEx() must be called at startup: the
+    manifest makes the library available, that call actually loads the classes.
+    Miss either one and CreateWindowExW for the list returns NULL.
+  -->
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity
+          type="win32"
+          name="Microsoft.Windows.Common-Controls"
+          version="6.0.0.0"
+          processorArchitecture="*"
+          publicKeyToken="6595b64144ccf1df"
+          language="*"/>
+    </dependentAssembly>
+  </dependency>
+
+  <!--
+    SUPPORTED OS
+    ============
+    Windows behaves differently depending on which OS versions a program
+    declares it was tested against - a compatibility measure for old software.
+    Declaring Windows 10/11 means we get current behaviour rather than
+    emulated legacy behaviour.
+  -->
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- Windows 10 and 11 -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+      <!-- Windows 8.1 -->
+      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
+    </application>
+  </compatibility>
+
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+
+      <!--
+        DPI AWARENESS
+        =============
+        On a high-DPI display, a program that says nothing gets scaled up by
+        Windows like a bitmap - everything works but looks slightly blurry.
+
+        We declare "system" awareness: we are told the system DPI once at
+        startup and size our own controls accordingly, giving crisp text.
+
+        We deliberately do NOT use the newer PerMonitorV2 mode. That one turns
+        off Windows' scaling entirely and hands you full responsibility:
+        you must handle WM_DPICHANGED, recreate every font, and rescale every
+        control whenever the window is dragged between monitors of different
+        DPI. Getting any of it wrong leaves a visibly broken window.
+
+        System awareness costs one line and is correct on a single-monitor
+        machine, or on multiple monitors at the same scaling - which covers
+        almost everyone. The trade is that dragging to a monitor with different
+        scaling looks slightly soft until restart.
+      -->
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+
+      <!--
+        LONG PATH AWARENESS
+        ===================
+        Lifts the 260-character path limit for normal (non-prefixed) paths.
+
+        Worth knowing: this only takes effect if the machine also has the
+        registry setting
+            HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled
+        set to 1, which is not the default. So we do NOT rely on it - the
+        scanner uses the explicit long-path prefix instead, which always works.
+        This entry is here as a belt-and-braces improvement for the paths we
+        hand to other APIs.
+      -->
+      <longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+
+      <!-- Use UTF-8 for any ANSI API that slips through. -->
+      <activeCodePage xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">UTF-8</activeCodePage>
+
+    </windowsSettings>
+  </application>
+
+  <!--
+    PRIVILEGE LEVEL
+    ===============
+    "asInvoker" means: run with whatever rights the user already has, and do
+    NOT show a User Account Control prompt.
+
+    This is the right choice here and is a direct consequence of a design
+    decision: we walk directories with FindFirstFileW, which needs no special
+    rights. Reading the NTFS Master File Table directly (the technique that
+    would make the initial scan take 3 seconds instead of 25) WOULD require
+    administrator rights, and therefore a UAC prompt on every single launch.
+  -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+
+</assembly>

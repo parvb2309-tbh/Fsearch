@@ -1,0 +1,79 @@
+# =============================================================================
+# FastSearch - exclusion list
+# =============================================================================
+#
+# Folders listed here are skipped during the scan, along with everything inside
+# them. Fewer files indexed means a faster scan, less memory, and - most
+# importantly - less noise in your results.
+#
+# Two kinds of entry are understood, and which one you get depends only on
+# whether the line contains a backslash:
+#
+#   node_modules            a NAME. Matches a folder called that, anywhere on
+#                           the drive, at any depth.
+#
+#   C:\Windows\WinSxS       a PATH. Matches that one specific folder.
+#
+#   AppData\Local\Temp      a PARTIAL path. Matches any folder whose path ends
+#                           with this, so it covers every user profile without
+#                           you having to list them one by one.
+#
+# Matching ignores case. Blank lines and lines starting with # are ignored.
+#
+# If this file is missing or empty, the built-in defaults in scanner.cpp are
+# used instead - which are the same as the list below.
+#
+# After editing, press F5 in the app (or restart it) to rescan.
+# =============================================================================
+
+
+# --- Windows internals -------------------------------------------------------
+# WinSxS is the Windows component store. It is enormous, and most of what is in
+# it is hard links to files that already appear elsewhere, so indexing it
+# roughly doubles your file count while adding nothing you would ever search
+# for. This one exclusion makes the biggest single difference.
+C:\Windows\WinSxS
+C:\Windows\servicing
+C:\Windows\Installer
+
+# Not readable without elevation anyway - listing them avoids pointless
+# access-denied churn during the scan.
+C:\$Recycle.Bin
+C:\System Volume Information
+
+
+# --- Developer noise ---------------------------------------------------------
+# A single JavaScript project can put 100,000 files in node_modules. You search
+# for your own source files, never these.
+node_modules
+.git
+.svn
+__pycache__
+.gradle
+.venv
+venv
+target
+vendor
+
+
+# --- Caches and temporary data -----------------------------------------------
+# These churn constantly, so anything indexed from them is stale almost
+# immediately.
+AppData\Local\Temp
+AppData\Local\Microsoft\Windows\INetCache
+AppData\Local\Microsoft\Windows\WebCache
+AppData\Local\Packages
+AppData\Local\CrashDumps
+
+
+# --- Suggestions you might want, but are NOT enabled by default --------------
+# Uncomment any of these if they match how you work.
+#
+# C:\Windows                  skip Windows entirely - much faster, but you lose
+#                             system .dll and .exe lookups
+# C:\Program Files
+# C:\ProgramData
+# AppData\Roaming
+# .cache
+# dist
+# build
